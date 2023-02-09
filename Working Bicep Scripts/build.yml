@@ -1,0 +1,17 @@
+trigger: none
+
+Pool:
+  name: default
+
+steps:
+- task: Copyfile@2
+ inputs:
+    SourceFolder: '$(agent.builddirectory)'
+    Content: '##'
+    TargetFolder: '$(Build.ArtifactstagingDirectory)'
+
+-task:PublishBuildArtifacts@1
+ inputs:
+  Patchtopublish: '$(Build.ArtifactstagingDirectory)'
+  ArtifactName: 'new'
+  publishlocation: 'container'

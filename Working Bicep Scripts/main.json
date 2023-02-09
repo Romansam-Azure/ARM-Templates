@@ -11,7 +11,7 @@
   "parameters": {
     "Keyvaultname": {
       "type": "string",
-      "defaultValue": "virtualmsspt2"
+      "defaultValue": "Virkvdev-mms"
     },
     "vmssName": {
       "type": "string",

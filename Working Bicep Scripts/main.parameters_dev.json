@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "Keyvaultname": {
-            "value": "virtualmsspt2"
+            "value": "Virkvdev-mms"
         },
         "vmssName": {
             "value": "rianstage"

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vmName": {
+      "value": "Niel-TestVM02"
+    },
+    "keyVaultName": {
+      "value": "az-kevden21"
+    },
+    "keyVaultResourceGroup": {
+      "value": "NetworkWatcherRG"
+    },
+    "keyEncryptionKeyURL": {
+      "value": "https://azk-resource.vault.azure.net/keys/encryptionkey/f27928826eec4f86a625f1c8f08efc78"
+    },
+    "location": {
+      "value": "SoutheastAsia"
+    }  
+}}

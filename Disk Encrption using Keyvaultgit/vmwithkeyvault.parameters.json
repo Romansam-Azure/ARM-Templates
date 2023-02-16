@@ -1,0 +1,20 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vmName": {
+      "value": "Niel-TestVM07"
+    },
+    "keyVaultName": {
+      "value": "az-kevden21"
+    },
+    "keyVaultResourceGroup": {
+      "value": "bicep_arm"
+    },
+    "keyEncryptionKeyURL": {
+      "value": "https://az-kevden21.vault.azure.net/keys/encryption-key/b9ddf6cb3e8147aa8d478f32cdfde6d4"
+    },
+    "location": {
+      "value": "eastus"
+    }  
+}}

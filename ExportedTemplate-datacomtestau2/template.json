@@ -169,6 +169,7 @@
                 "osProfile": {
                     "computerName": "vm0",
                     "adminUsername": "romanrian",
+                    "adminpassword": "Newyear@2021",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": false,
                         "provisionVMAgent": true,
@@ -228,6 +229,7 @@
                 "osProfile": {
                     "computerName": "vm1",
                     "adminUsername": "romanrian",
+                    "adminpassword": "Newyear@2021",                    
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": false,
                         "provisionVMAgent": true,
@@ -287,6 +289,7 @@
                 "osProfile": {
                     "computerName": "vm2",
                     "adminUsername": "romanrian",
+                    "adminpassword": "Newyear@2021",                    
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": false,
                         "provisionVMAgent": true,
@@ -346,6 +349,7 @@
                 "osProfile": {
                     "computerName": "vm3",
                     "adminUsername": "romanrian",
+                    "adminpassword": "Newyear@2021",                    
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": false,
                         "provisionVMAgent": true,

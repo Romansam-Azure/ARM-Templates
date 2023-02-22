@@ -257,24 +257,12 @@
             "apiVersion": "2022-11-01",
             "name": "[parameters('availabilitySets_AvSet_0_name')]",
             "location": "australiaeast",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm0_name'))]",
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm2_name'))]"
-            ],
             "sku": {
                 "name": "Aligned"
             },
             "properties": {
                 "platformUpdateDomainCount": 2,
                 "platformFaultDomainCount": 2,
-                "virtualMachines": [
-                    {
-                        "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm0_name'))]"
-                    },
-                    {
-                        "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm2_name'))]"
-                    }
-                ]
             }
         },
         {
@@ -282,24 +270,13 @@
             "apiVersion": "2022-11-01",
             "name": "[parameters('availabilitySets_AvSet_1_name')]",
             "location": "australiaeast",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm1_name'))]",
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm3_name'))]"
-            ],
             "sku": {
                 "name": "Aligned"
             },
             "properties": {
                 "platformUpdateDomainCount": 2,
-                "platformFaultDomainCount": 2,
-                "virtualMachines": [
-                    {
-                        "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm1_name'))]"
-                    },
-                    {
-                        "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm3_name'))]"
-                    }
-                ]
+                "platformFaultDomainCount": 2
+               
             }
         },
         {
@@ -307,6 +284,9 @@
             "apiVersion": "2022-11-01",
             "name": "[parameters('virtualMachines_myvm0_name')]",
             "location": "australiaeast",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNET_name'))]"
+            ],
                 "properties": {
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_0_name'))]"
@@ -365,6 +345,9 @@
             "apiVersion": "2022-11-01",
             "name": "[parameters('virtualMachines_myvm1_name')]",
             "location": "australiaeast",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNET_name'))]"
+            ],
                 "properties": {
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_1_name'))]"
@@ -423,6 +406,9 @@
             "apiVersion": "2022-11-01",
             "name": "[parameters('virtualMachines_myvm2_name')]",
             "location": "australiaeast",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNET_name'))]"
+            ],
                 "properties": {
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_0_name'))]"
@@ -481,6 +467,9 @@
             "apiVersion": "2022-11-01",
             "name": "[parameters('virtualMachines_myvm3_name')]",
             "location": "australiaeast",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNET_name'))]"
+            ],
                 "properties": {
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_1_name'))]"

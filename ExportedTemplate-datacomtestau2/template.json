@@ -7,47 +7,47 @@
             "type": "String"
         },
         "virtualMachines_myvm0_name": {
-            "defaultValue": "myvm0",
+            "defaultValue": "myvm071",
             "type": "String"
         },
         "virtualMachines_myvm1_name": {
-            "defaultValue": "myvm1",
+            "defaultValue": "myvm171",
             "type": "String"
         },
         "virtualMachines_myvm2_name": {
-            "defaultValue": "myvm2",
+            "defaultValue": "myvm271",
             "type": "String"
         },
         "virtualMachines_myvm3_name": {
-            "defaultValue": "myvm3",
+            "defaultValue": "myvm371",
             "type": "String"
         },
         "networkInterfaces_nic0_name": {
-            "defaultValue": "nic0",
+            "defaultValue": "nic071",
             "type": "String"
         },
         "networkInterfaces_nic1_name": {
-            "defaultValue": "nic1",
+            "defaultValue": "nic171",
             "type": "String"
         },
         "networkInterfaces_nic2_name": {
-            "defaultValue": "nic2",
+            "defaultValue": "nic271",
             "type": "String"
         },
         "networkInterfaces_nic3_name": {
-            "defaultValue": "nic3",
+            "defaultValue": "nic371",
             "type": "String"
         },
         "availabilitySets_AvSet_0_name": {
-            "defaultValue": "AvSet-0",
+            "defaultValue": "AvSet-071",
             "type": "String"
         },
         "availabilitySets_AvSet_1_name": {
-            "defaultValue": "AvSet-1",
+            "defaultValue": "AvSet-171",
             "type": "String"
         },
         "networkSecurityGroups_default_NSG_name": {
-            "defaultValue": "default-NSG",
+            "defaultValue": "default-NSG71",
             "type": "String"
         }
     },

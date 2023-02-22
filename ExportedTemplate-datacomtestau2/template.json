@@ -206,9 +206,6 @@
             "apiVersion": "2022-07-01",
             "name": "[parameters('networkSecurityGroups_default_NSG_name')]",
             "location": "australiaeast",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('networkSecurityGroups_default_NSG_name'), 'default-allow-22')]"
-            ],
             "properties": {
                 "securityRules": [
                     {

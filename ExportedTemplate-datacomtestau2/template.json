@@ -574,11 +574,6 @@
             "apiVersion": "2022-07-01",
             "name": "[parameters('virtualNetworks_VNET_name')]",
             "location": "australiaeast",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VNET_name'), 'Subnet-1')]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VNET_name'), 'Subnet-2')]"
-            ],
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [

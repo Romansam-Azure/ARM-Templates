@@ -307,9 +307,8 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS",
-                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachines_myvm0_name'), '_OsDisk_1_ee8356c0886b410b90e5e252fc289a88'))]"
-                        },
+                            "storageAccountType": "Standard_LRS"
+                         },
                         "deleteOption": "Detach",
                         "diskSizeGB": 30
                     },
@@ -368,8 +367,7 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS",
-                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachines_myvm1_name'), '_OsDisk_1_f8942641c61840a09cc8718c702bb60e'))]"
+                            "storageAccountType": "Standard_LRS"
                         },
                         "deleteOption": "Detach",
                         "diskSizeGB": 30
@@ -429,8 +427,7 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS",
-                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachines_myvm2_name'), '_OsDisk_1_f4f2fe071a234e80b03d53cf95de4964'))]"
+                            "storageAccountType": "Standard_LRS"
                         },
                         "deleteOption": "Detach",
                         "diskSizeGB": 30
@@ -490,9 +487,8 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS",
-                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachines_myvm3_name'), '_OsDisk_1_3f44e013f9944db5916859cb332544c0'))]"
-                        },
+                            "storageAccountType": "Standard_LRS"
+                       },
                         "deleteOption": "Detach",
                         "diskSizeGB": 30
                     },

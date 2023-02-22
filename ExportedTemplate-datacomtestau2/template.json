@@ -310,11 +310,7 @@
             "apiVersion": "2022-11-01",
             "name": "[parameters('virtualMachines_myvm0_name')]",
             "location": "australiaeast",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_0_name'))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_nic0_name'))]"
-            ],
-            "properties": {
+                "properties": {
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_0_name'))]"
                 },
@@ -372,11 +368,7 @@
             "apiVersion": "2022-11-01",
             "name": "[parameters('virtualMachines_myvm1_name')]",
             "location": "australiaeast",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_1_name'))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_nic1_name'))]"
-            ],
-            "properties": {
+                "properties": {
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_1_name'))]"
                 },
@@ -434,11 +426,7 @@
             "apiVersion": "2022-11-01",
             "name": "[parameters('virtualMachines_myvm2_name')]",
             "location": "australiaeast",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_0_name'))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_nic2_name'))]"
-            ],
-            "properties": {
+                "properties": {
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_0_name'))]"
                 },
@@ -496,11 +484,7 @@
             "apiVersion": "2022-11-01",
             "name": "[parameters('virtualMachines_myvm3_name')]",
             "location": "australiaeast",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_1_name'))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_nic3_name'))]"
-            ],
-            "properties": {
+                "properties": {
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_1_name'))]"
                 },
@@ -557,11 +541,7 @@
             "type": "Microsoft.Network/virtualNetworks/subnets",
             "apiVersion": "2022-07-01",
             "name": "[concat(parameters('virtualNetworks_VNET_name'), '/Subnet-1')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNET_name'))]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"
-            ],
-            "properties": {
+                "properties": {
                 "addressPrefix": "10.0.0.0/24",
                 "networkSecurityGroup": {
                     "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"

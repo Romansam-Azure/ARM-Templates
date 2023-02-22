@@ -1,0 +1,42 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualNetworks_VNET_name": {
+            "value": null
+        },
+        "virtualMachines_myvm0_name": {
+            "value": null
+        },
+        "virtualMachines_myvm1_name": {
+            "value": null
+        },
+        "virtualMachines_myvm2_name": {
+            "value": null
+        },
+        "virtualMachines_myvm3_name": {
+            "value": null
+        },
+        "networkInterfaces_nic0_name": {
+            "value": null
+        },
+        "networkInterfaces_nic1_name": {
+            "value": null
+        },
+        "networkInterfaces_nic2_name": {
+            "value": null
+        },
+        "networkInterfaces_nic3_name": {
+            "value": null
+        },
+        "availabilitySets_AvSet_0_name": {
+            "value": null
+        },
+        "availabilitySets_AvSet_1_name": {
+            "value": null
+        },
+        "networkSecurityGroups_default_NSG_name": {
+            "value": null
+        }
+    }
+}

@@ -24,7 +24,7 @@ param region string
 
 
 resource resourcegroupbp1 'Microsoft.Resources/resourceGroups@2022-09-01' = [for name in list: {
-  name: 'rg-${envName}-aro-${name}-${region}'
+  name: 'rg-${envName}-few-${name}-${region}'
   location: location
   tags: resourceTags
   

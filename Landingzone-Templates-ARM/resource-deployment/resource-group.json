@@ -60,7 +60,7 @@
           "name": "resourcegroupCopy",
           "count": "[length(variables('vmListArray'))]"
         },
-            "name": "[concat('rg-',parameters('envName'),'-dfj-',variables('vmListArray')[copyIndex()],'-',parameters('region'))]",
+            "name": "[concat('rg-',parameters('envName'),'-mon-',variables('vmListArray')[copyIndex()],'-',parameters('region'))]",
             "type": "Microsoft.Resources/resourceGroups",
             "apiVersion": "2021-04-01",
             "location": "[parameters('location')]",

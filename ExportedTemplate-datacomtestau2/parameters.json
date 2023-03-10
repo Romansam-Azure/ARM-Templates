@@ -3,40 +3,40 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "virtualNetworks_VNET_name": {
-            "value": null
+            "value": "VNET71"
         },
         "virtualMachines_myvm0_name": {
-            "value": null
+            "value": "myvm071"
         },
         "virtualMachines_myvm1_name": {
-            "value": null
+            "value": "myvm171"
         },
         "virtualMachines_myvm2_name": {
-            "value": null
+            "value": "myvm271"
         },
         "virtualMachines_myvm3_name": {
-            "value": null
+            "value": "myvm371"
         },
         "networkInterfaces_nic0_name": {
-            "value": null
+            "value": "nic071"
         },
         "networkInterfaces_nic1_name": {
-            "value": null
+            "value": "nic171"
         },
         "networkInterfaces_nic2_name": {
-            "value": null
+            "value": "nic271"
         },
         "networkInterfaces_nic3_name": {
-            "value": null
+            "value": "nic371"
         },
         "availabilitySets_AvSet_0_name": {
-            "value": null
+            "value": "AvSet-071"
         },
         "availabilitySets_AvSet_1_name": {
-            "value": null
+            "value": "AvSet-171"
         },
         "networkSecurityGroups_default_NSG_name": {
-            "value": null
+            "value": "default-NSG71"
         }
     }
 }

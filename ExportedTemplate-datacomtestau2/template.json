@@ -7,52 +7,207 @@
             "type": "String"
         },
         "virtualMachines_myvm0_name": {
-            "defaultValue": "myvm0",
+            "defaultValue": "myvm071",
             "type": "String"
         },
         "virtualMachines_myvm1_name": {
-            "defaultValue": "myvm1",
+            "defaultValue": "myvm171",
             "type": "String"
         },
         "virtualMachines_myvm2_name": {
-            "defaultValue": "myvm2",
+            "defaultValue": "myvm271",
             "type": "String"
         },
         "virtualMachines_myvm3_name": {
-            "defaultValue": "myvm3",
+            "defaultValue": "myvm371",
             "type": "String"
         },
         "networkInterfaces_nic0_name": {
-            "defaultValue": "nic0",
+            "defaultValue": "nic071",
             "type": "String"
         },
         "networkInterfaces_nic1_name": {
-            "defaultValue": "nic1",
+            "defaultValue": "nic171",
             "type": "String"
         },
         "networkInterfaces_nic2_name": {
-            "defaultValue": "nic2",
+            "defaultValue": "nic271",
             "type": "String"
         },
         "networkInterfaces_nic3_name": {
-            "defaultValue": "nic3",
+            "defaultValue": "nic371",
             "type": "String"
         },
         "availabilitySets_AvSet_0_name": {
-            "defaultValue": "AvSet-0",
+            "defaultValue": "AvSet-071",
             "type": "String"
         },
         "availabilitySets_AvSet_1_name": {
-            "defaultValue": "AvSet-1",
+            "defaultValue": "AvSet-171",
             "type": "String"
         },
         "networkSecurityGroups_default_NSG_name": {
-            "defaultValue": "default-NSG",
+            "defaultValue": "default-NSG71",
             "type": "String"
         }
     },
     "variables": {},
     "resources": [
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "apiVersion": "2022-11-01",
+            "name": "[parameters('availabilitySets_AvSet_0_name')]",
+            "location": "australiaeast",
+            "sku": {
+                "name": "Aligned"
+            },
+            "properties": {
+                "platformUpdateDomainCount": 2,
+                "platformFaultDomainCount": 2
+            }
+        },
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "apiVersion": "2022-11-01",
+            "name": "[parameters('availabilitySets_AvSet_1_name')]",
+            "location": "australiaeast",
+            "sku": {
+                "name": "Aligned"
+            },
+            "properties": {
+                "platformUpdateDomainCount": 2,
+                "platformFaultDomainCount": 2
+               
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2022-07-01",
+            "name": "[parameters('networkSecurityGroups_default_NSG_name')]",
+            "location": "australiaeast",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "default-allow-22",
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('networkSecurityGroups_default_NSG_name'), 'default-allow-22')]",
+                        "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 1000,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2022-07-01",
+            "name": "[concat(parameters('networkSecurityGroups_default_NSG_name'), '/default-allow-22')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"
+            ],
+            "properties": {
+                "protocol": "Tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "22",
+                "sourceAddressPrefix": "*",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 1000,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2022-07-01",
+            "name": "[parameters('virtualNetworks_VNET_name')]",
+            "location": "australiaeast",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "Subnet-1",
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VNET_name'), 'Subnet-1')]",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/24",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"
+                            },
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        },
+                        "type": "Microsoft.Network/virtualNetworks/subnets"
+                    },
+                    {
+                        "name": "Subnet-2",
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VNET_name'), 'Subnet-2')]",
+                        "properties": {
+                            "addressPrefix": "10.0.1.0/24",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"
+                            },
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        },
+                        "type": "Microsoft.Network/virtualNetworks/subnets"
+                    }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2022-07-01",
+            "name": "[concat(parameters('virtualNetworks_VNET_name'), '/Subnet-1')]",
+                "properties": {
+                "addressPrefix": "10.0.0.0/24",
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"
+                },
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Disabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2022-07-01",
+            "name": "[concat(parameters('virtualNetworks_VNET_name'), '/Subnet-2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNET_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"
+            ],
+            "properties": {
+                "addressPrefix": "10.0.1.0/24",
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"
+                },
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Disabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
         {
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2022-07-01",
@@ -202,119 +357,14 @@
             }
         },
         {
-            "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2022-07-01",
-            "name": "[parameters('networkSecurityGroups_default_NSG_name')]",
-            "location": "australiaeast",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('networkSecurityGroups_default_NSG_name'), 'default-allow-22')]"
-            ],
-            "properties": {
-                "securityRules": [
-                    {
-                        "name": "default-allow-22",
-                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('networkSecurityGroups_default_NSG_name'), 'default-allow-22')]",
-                        "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-                        "properties": {
-                            "protocol": "Tcp",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "22",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 1000,
-                            "direction": "Inbound",
-                            "sourcePortRanges": [],
-                            "destinationPortRanges": [],
-                            "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": []
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-            "apiVersion": "2022-07-01",
-            "name": "[concat(parameters('networkSecurityGroups_default_NSG_name'), '/default-allow-22')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"
-            ],
-            "properties": {
-                "protocol": "Tcp",
-                "sourcePortRange": "*",
-                "destinationPortRange": "22",
-                "sourceAddressPrefix": "*",
-                "destinationAddressPrefix": "*",
-                "access": "Allow",
-                "priority": 1000,
-                "direction": "Inbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [],
-                "destinationAddressPrefixes": []
-            }
-        },
-        {
-            "type": "Microsoft.Compute/availabilitySets",
-            "apiVersion": "2022-11-01",
-            "name": "[parameters('availabilitySets_AvSet_0_name')]",
-            "location": "australiaeast",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm0_name'))]",
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm2_name'))]"
-            ],
-            "sku": {
-                "name": "Aligned"
-            },
-            "properties": {
-                "platformUpdateDomainCount": 2,
-                "platformFaultDomainCount": 2,
-                "virtualMachines": [
-                    {
-                        "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm0_name'))]"
-                    },
-                    {
-                        "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm2_name'))]"
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Compute/availabilitySets",
-            "apiVersion": "2022-11-01",
-            "name": "[parameters('availabilitySets_AvSet_1_name')]",
-            "location": "australiaeast",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm1_name'))]",
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm3_name'))]"
-            ],
-            "sku": {
-                "name": "Aligned"
-            },
-            "properties": {
-                "platformUpdateDomainCount": 2,
-                "platformFaultDomainCount": 2,
-                "virtualMachines": [
-                    {
-                        "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm1_name'))]"
-                    },
-                    {
-                        "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_myvm3_name'))]"
-                    }
-                ]
-            }
-        },
-        {
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2022-11-01",
             "name": "[parameters('virtualMachines_myvm0_name')]",
             "location": "australiaeast",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_0_name'))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_nic0_name'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNET_name'))]"
             ],
-            "properties": {
+                "properties": {
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_0_name'))]"
                 },
@@ -334,9 +384,8 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS",
-                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachines_myvm0_name'), '_OsDisk_1_ee8356c0886b410b90e5e252fc289a88'))]"
-                        },
+                            "storageAccountType": "Standard_LRS"
+                         },
                         "deleteOption": "Detach",
                         "diskSizeGB": 30
                     },
@@ -345,6 +394,7 @@
                 "osProfile": {
                     "computerName": "vm0",
                     "adminUsername": "romanrian",
+                    "adminpassword": "Newyear@2021",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": false,
                         "provisionVMAgent": true,
@@ -355,8 +405,7 @@
                         "enableVMAgentPlatformUpdates": false
                     },
                     "secrets": [],
-                    "allowExtensionOperations": true,
-                    "requireGuestProvisionSignal": true
+                    "allowExtensionOperations": true
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -373,10 +422,9 @@
             "name": "[parameters('virtualMachines_myvm1_name')]",
             "location": "australiaeast",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_1_name'))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_nic1_name'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNET_name'))]"
             ],
-            "properties": {
+                "properties": {
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_1_name'))]"
                 },
@@ -396,8 +444,7 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS",
-                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachines_myvm1_name'), '_OsDisk_1_f8942641c61840a09cc8718c702bb60e'))]"
+                            "storageAccountType": "Standard_LRS"
                         },
                         "deleteOption": "Detach",
                         "diskSizeGB": 30
@@ -407,6 +454,7 @@
                 "osProfile": {
                     "computerName": "vm1",
                     "adminUsername": "romanrian",
+                    "adminpassword": "Newyear@2021",                    
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": false,
                         "provisionVMAgent": true,
@@ -417,8 +465,7 @@
                         "enableVMAgentPlatformUpdates": false
                     },
                     "secrets": [],
-                    "allowExtensionOperations": true,
-                    "requireGuestProvisionSignal": true
+                    "allowExtensionOperations": true
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -435,10 +482,9 @@
             "name": "[parameters('virtualMachines_myvm2_name')]",
             "location": "australiaeast",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_0_name'))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_nic2_name'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNET_name'))]"
             ],
-            "properties": {
+                "properties": {
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_0_name'))]"
                 },
@@ -458,8 +504,7 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS",
-                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachines_myvm2_name'), '_OsDisk_1_f4f2fe071a234e80b03d53cf95de4964'))]"
+                            "storageAccountType": "Standard_LRS"
                         },
                         "deleteOption": "Detach",
                         "diskSizeGB": 30
@@ -469,6 +514,7 @@
                 "osProfile": {
                     "computerName": "vm2",
                     "adminUsername": "romanrian",
+                    "adminpassword": "Newyear@2021",                    
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": false,
                         "provisionVMAgent": true,
@@ -479,8 +525,7 @@
                         "enableVMAgentPlatformUpdates": false
                     },
                     "secrets": [],
-                    "allowExtensionOperations": true,
-                    "requireGuestProvisionSignal": true
+                    "allowExtensionOperations": true
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -497,10 +542,9 @@
             "name": "[parameters('virtualMachines_myvm3_name')]",
             "location": "australiaeast",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_1_name'))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_nic3_name'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNET_name'))]"
             ],
-            "properties": {
+                "properties": {
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_AvSet_1_name'))]"
                 },
@@ -520,9 +564,8 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS",
-                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachines_myvm3_name'), '_OsDisk_1_3f44e013f9944db5916859cb332544c0'))]"
-                        },
+                            "storageAccountType": "Standard_LRS"
+                       },
                         "deleteOption": "Detach",
                         "diskSizeGB": 30
                     },
@@ -531,6 +574,7 @@
                 "osProfile": {
                     "computerName": "vm3",
                     "adminUsername": "romanrian",
+                    "adminpassword": "Newyear@2021",                    
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": false,
                         "provisionVMAgent": true,
@@ -541,8 +585,7 @@
                         "enableVMAgentPlatformUpdates": false
                     },
                     "secrets": [],
-                    "allowExtensionOperations": true,
-                    "requireGuestProvisionSignal": true
+                    "allowExtensionOperations": true
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -551,92 +594,6 @@
                         }
                     ]
                 }
-            }
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2022-07-01",
-            "name": "[concat(parameters('virtualNetworks_VNET_name'), '/Subnet-1')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNET_name'))]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"
-            ],
-            "properties": {
-                "addressPrefix": "10.0.0.0/24",
-                "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"
-                },
-                "delegations": [],
-                "privateEndpointNetworkPolicies": "Disabled",
-                "privateLinkServiceNetworkPolicies": "Enabled"
-            }
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2022-07-01",
-            "name": "[concat(parameters('virtualNetworks_VNET_name'), '/Subnet-2')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNET_name'))]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"
-            ],
-            "properties": {
-                "addressPrefix": "10.0.1.0/24",
-                "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"
-                },
-                "delegations": [],
-                "privateEndpointNetworkPolicies": "Disabled",
-                "privateLinkServiceNetworkPolicies": "Enabled"
-            }
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2022-07-01",
-            "name": "[parameters('virtualNetworks_VNET_name')]",
-            "location": "australiaeast",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VNET_name'), 'Subnet-1')]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VNET_name'), 'Subnet-2')]"
-            ],
-            "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "10.0.0.0/16"
-                    ]
-                },
-                "subnets": [
-                    {
-                        "name": "Subnet-1",
-                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VNET_name'), 'Subnet-1')]",
-                        "properties": {
-                            "addressPrefix": "10.0.0.0/24",
-                            "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"
-                            },
-                            "delegations": [],
-                            "privateEndpointNetworkPolicies": "Disabled",
-                            "privateLinkServiceNetworkPolicies": "Enabled"
-                        },
-                        "type": "Microsoft.Network/virtualNetworks/subnets"
-                    },
-                    {
-                        "name": "Subnet-2",
-                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VNET_name'), 'Subnet-2')]",
-                        "properties": {
-                            "addressPrefix": "10.0.1.0/24",
-                            "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_default_NSG_name'))]"
-                            },
-                            "delegations": [],
-                            "privateEndpointNetworkPolicies": "Disabled",
-                            "privateLinkServiceNetworkPolicies": "Enabled"
-                        },
-                        "type": "Microsoft.Network/virtualNetworks/subnets"
-                    }
-                ],
-                "virtualNetworkPeerings": [],
-                "enableDdosProtection": false
             }
         }
     ]

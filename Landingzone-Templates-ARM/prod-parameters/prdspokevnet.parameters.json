@@ -1,0 +1,87 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "routetablecustom": {
+            "value": [
+            
+                            {
+                            "Name":"pep"               
+                            },
+                            {
+                            "Name":"web"               
+                            },
+                            {
+                            "Name":"app"               
+                            },
+                            {
+                            "Name":"db"               
+                            }
+                            
+                            
+                        ]
+        },
+        "nsgName": {
+            "value": [
+            
+                            {
+                            "Name":"pep"               
+                            },
+                            {
+                            "Name":"web"               
+                            },
+                            {
+                            "Name":"app"               
+                            },
+                            {
+                            "Name":"db"               
+                            }
+                            
+                            
+                        ]
+        },
+        "subnetsConfiguration": {
+            "value": [
+                {
+                    "name": "pep",
+                    "snetaddressSuffix": ".1.128/27",
+                    "nsgSuffix":"pep",
+                    "routeTableSuffix":"pep"
+                },
+                {
+                    "name": "web",
+                    "snetaddressSuffix": ".1.0/26",
+                    "nsgSuffix":"web",
+                    "routeTableSuffix":"web"
+                },
+                {
+                    "name": "app",
+                    "snetaddressSuffix": ".0.0/26",
+                    "nsgSuffix":"app",
+                    "routeTableSuffix":"app"
+                },
+                {
+                    "name": "db",
+                    "snetaddressSuffix": ".1.64/26",
+                    "nsgSuffix":"db",
+                    "routeTableSuffix":"db"
+                }
+            ]
+        },
+        "envName": {
+            "value": "#envName#" 
+        },
+        "regionsuffix": {
+            "value": "#regionsuffix#" 
+        },
+        "region": {
+            "value": "#region#"
+        },
+        "spoke-vnet-address-prefix": {
+            "value": "#spoke-vnet-address-prefix#"
+        },
+        "hub-subscriptionID": {
+            "value": "#hub-subscriptionID#"
+        }
+    }
+}

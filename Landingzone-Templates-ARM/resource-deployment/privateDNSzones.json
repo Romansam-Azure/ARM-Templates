@@ -1,0 +1,218 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "privateDnsZones": {
+            "type": "array",
+            "defaultValue":[
+            
+                            {
+                            "Name":"privatelink.blob.core.windows.net",
+                            "prdstorageipv4AddressSuffix":".1.4",
+                            "npdstorageipv4AddressSuffix":".1.5"
+                            
+
+                            },
+                            {
+                            "Name":"privatelink.file.core.windows.net" ,
+                            "prdstorageipv4AddressSuffix":".1.6",
+                            "npdstorageipv4AddressSuffix":".1.7"
+                                          
+                            },
+                            {
+                            "Name":"privatelink.vaultcore.azure.net",
+                            "prdstorageipv4AddressSuffix":".1.8",
+                            "npdstorageipv4AddressSuffix":".1.9"                
+                          
+                            }
+                            
+                            
+                        ]
+        },
+        "hub-subscriptionID":{
+            "type":"string",
+            "metadata":{
+                "descriptoin" :"Hub Vnet Subscription ID"
+            }
+        },
+        "regionsuffix":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure regionsuffix name in short"
+            }
+            
+        },
+        "envName": {
+            "type": "String",
+            "metadata": {
+                "description": "Environment Name: dev / stg /prod"
+            }
+        },
+         "storageregion":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure Region name in short"
+            }
+        },
+        "spoke-vnet-address-prefix":{
+          "type": "string",
+          "metadata":{
+            "description":"Spoke Vnet prefix"
+          }
+        },
+         "region":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure region name in short - auet"
+            }
+        },
+         "privatelink":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure region name in short - auet"
+            }
+        }
+    },
+    "variables": {
+      "hub-vnet-name": "[concat('vnet-hub-dfj-',parameters('regionsuffix'))]",
+      "hub-vnet-name-ause":"vnet-hub-dfj-ause-b-01",
+      "hub-vnet-resource-group":"[concat('rg-hub-dfj-network-',parameters('region'))]",
+      "hub-vnet-resource-group-ause":"rg-hub-dfj-network-ause-b-01",
+      "prdstorageAccountname":"[concat('rlsansglogprddfj',parameters('storageregion'))]",
+      "npdstorageAccountname":"[concat('rlsansglognpddfj',parameters('storageregion'))]",
+      "privateiplinkname-a":"[concat(variables('hub-vnet-name'),'-to-auet-dfj-vNet-a-link')]",
+      "privateiplinkname-b":"[concat(variables('hub-vnet-name-ause'),'-to-ause-dfj-vNet-b-link')]"
+      
+    },
+    "resources": [
+        {
+        "copy": {
+        "name": "privateDnsZones",
+        "count": "[length(parameters('privateDnsZones'))]"
+         },
+         "type": "Microsoft.Network/privateDnsZones",
+           "apiVersion": "2018-09-01",
+            "name": "[toLower(parameters('privateDnsZones')[CopyIndex()].Name)]",
+           "location": "global",
+             "properties": {
+                 "maxNumberOfRecordSets": 25000,
+                 "maxNumberOfVirtualNetworkLinks": 1000,
+                 "maxNumberOfVirtualNetworkLinksWithRegistration": 100,
+                 "numberOfRecordSets": 2,
+                 "numberOfVirtualNetworkLinks": 1,
+                 "numberOfVirtualNetworkLinksWithRegistration": 1,
+                 "provisioningState": "Succeeded"
+             }
+        },
+        // {
+        //   "copy": {
+        // "name": "privateDnsZones",
+        // "count": "[length(parameters('privateDnsZones'))]"
+        // },
+        //     "type": "Microsoft.Network/privateDnsZones/A",
+        //     "apiVersion": "2018-09-01",
+        //     "name": "[concat(toLower(parameters('privateDnsZones')[CopyIndex()].Name), '/',variables('prdstorageAccountname'))]",
+        //     "dependsOn": [
+        //         "[resourceId('Microsoft.Network/privateDnsZones', toLower(parameters('privateDnsZones')[CopyIndex()].Name))]"
+        //     ],
+        //     "properties": {
+        //         "metadata": {
+        //             "creator": "created by private endpoint"
+        //         },
+        //         "ttl": 10,
+        //         "aRecords": [
+        //             {
+        //                 "ipv4Address": "[concat(parameters('spoke-vnet-address-prefix'),parameters('privateDnsZones')[CopyIndex()].prdstorageipv4AddressSuffix)]"
+        //             }
+        //         ]
+        //     }
+        // },
+        // {
+        //   "copy": {
+        // "name": "privateDnsZones",
+        // "count": "[length(parameters('privateDnsZones'))]"
+        // },
+        //     "type": "Microsoft.Network/privateDnsZones/A",
+        //     "apiVersion": "2018-09-01",
+        //     "name": "[concat(toLower(parameters('privateDnsZones')[CopyIndex()].Name), '/',variables('npdstorageAccountname'))]",
+        //     "dependsOn": [
+        //         "[resourceId('Microsoft.Network/privateDnsZones', toLower(parameters('privateDnsZones')[CopyIndex()].Name))]"
+        //     ],
+        //     "properties": {
+        //         "metadata": {
+        //             "creator": "created by private endpoint"
+        //         },
+        //         "ttl": 10,
+        //         "aRecords": [
+        //             {
+        //                 "ipv4Address": "[concat(parameters('spoke-vnet-address-prefix'),parameters('privateDnsZones')[CopyIndex()].npdstorageipv4AddressSuffix)]"
+        //             }
+        //         ]
+        //     }
+        // },
+        // {
+        //   "copy": {
+        // "name": "privateDnsZones",
+        // "count": "[length(parameters('privateDnsZones'))]"
+        // },
+        //     "type": "Microsoft.Network/privateDnsZones/SOA",
+        //     "apiVersion": "2018-09-01",
+        //     "name": "[concat(toLower(parameters('privateDnsZones')[CopyIndex()].Name), '/@')]",
+        //     "dependsOn": [
+        //         "[resourceId('Microsoft.Network/privateDnsZones', toLower(parameters('privateDnsZones')[CopyIndex()].Name))]"
+        //     ],
+        //     "properties": {
+        //         "ttl": 3600,
+        //         "soaRecord": {
+        //             "email": "azureprivatedns-host.microsoft.com",
+        //             "expireTime": 2419200,
+        //             "host": "azureprivatedns.net",
+        //             "minimumTtl": 10,
+        //             "refreshTime": 3600,
+        //             "retryTime": 300,
+        //             "serialNumber": 1
+        //         }
+        //     }
+        // },
+        {
+          "copy": {
+        "name": "privateDnsZones",
+        "count": "[length(parameters('privateDnsZones'))]"
+        },
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2018-09-01",
+            "name": "[concat(toLower(parameters('privateDnsZones')[CopyIndex()].Name), '/',variables('privateiplinkname-a'))]",
+            "location": "global",
+            "tags": "[resourceGroup().tags]",
+            "dependsOn": [
+                 "[resourceId('Microsoft.Network/privateDnsZones', toLower(parameters('privateDnsZones')[CopyIndex()].Name))]"
+             ],
+            "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                    "id": "[resourceId(parameters('hub-subscriptionID'),variables('hub-vnet-resource-group'),'Microsoft.Network/virtualNetworks', variables('hub-vnet-name'))]"
+                }
+            }
+        },
+        {
+          "copy": {
+        "name": "privateDnsZones",
+        "count": "[length(parameters('privateDnsZones'))]"
+        },
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2018-09-01",
+            "name": "[concat(toLower(parameters('privateDnsZones')[CopyIndex()].Name), '/',variables('privateiplinkname-b'))]",
+            "location": "global",
+            "tags": "[resourceGroup().tags]",
+             "dependsOn": [
+                 "[resourceId('Microsoft.Network/privateDnsZones', toLower(parameters('privateDnsZones')[CopyIndex()].Name))]"
+             ],
+            "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                    "id": "[resourceId(parameters('hub-subscriptionID'),variables('hub-vnet-resource-group-ause'),'Microsoft.Network/virtualNetworks', variables('hub-vnet-name-ause'))]"
+                }
+            }
+        }
+    ]
+}

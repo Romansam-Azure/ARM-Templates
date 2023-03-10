@@ -1,0 +1,82 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceTags": {
+            "type": "object",
+            "defaultvalue": {
+            "CostCenter":"",  
+            "Environment": "",
+		    "ApplicationName": "",
+            "Owner": "Retirement Living",
+		    "Criticality":"High",
+		    "Department":"",
+		    "MaintenanceWindow":"",
+		    "DataClassification":"Sensitive",
+		    "ApplicationType":"",
+		    "BackupPlan":""
+            }
+        },
+        "envName": {
+            "value": "#envname#" 
+        },
+        "regionsuffix": {
+            "value": "#regionsuffix#" 
+        },
+        "hub-vnet-address-prefix":{
+            "value":"#vnetaddressperfix#"
+        },
+       
+        "routetablecustom":{
+            "value":[
+                {
+                "Name":"pep"               
+                },
+                {
+                "Name":"dfjsvs"               
+                },
+                {
+                "Name":"mgmt"               
+                }
+                
+                
+            ]
+        },
+        "nsgName": {
+          
+            "value":[
+
+                {
+                "Name":"pep"               
+                },
+                {
+                "Name":"dfjsvs"               
+                },
+                {
+                "Name":"mgmt"               
+                }
+                
+                
+            ]
+        },
+        "routetable": {
+            
+            "value":[
+                {
+                "Name":"GatewaySubnet"               
+                },
+               {
+                "Name":"AzureFirewallSubnet"               
+                },
+                {
+                "Name":"ApplicationGatewaySubnet"               
+                },
+                {
+                "Name":"AzureBastionSubnet"               
+                }
+                
+                
+            ]
+        }
+    }
+}

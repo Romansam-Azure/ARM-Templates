@@ -1,0 +1,75 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    
+  
+     "rgList": {
+        "type": "string",
+        "minLength": 1,
+        "metadata": {
+          "description": "List of resourceGroups names seperated by comma. E.g. network, servers, storage, automation and so."
+        }
+      },
+       "envName": {
+            "type": "String",
+             "metadata": {
+                "description": "Environment Name: hub/dev/stg/prod"
+            }
+        },
+         "regionsuffix":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure Region name in short"
+            }
+        }
+  },
+  "variables": {
+     "rgListArray": "[split(parameters('rgList'),',')]"
+
+  },
+  "resources": [
+    // {
+    //   "type": "Microsoft.Resources/resourceGroups",
+    //   "apiVersion": "2021-04-01",
+    //   "name": "[parameters('rgName')]",
+    //   "location": "[parameters('rgLocation')]",
+    //   "properties": {}
+    // },
+    {
+        "copy": {
+          "name": "resourcegroupCopy",
+          "count": "[length(variables('rgListArray'))]"
+        },
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "lockDeployment",
+      "resourceGroup": "[concat('rg-',parameters('envName'),'-dfj-',variables('rgListArray')[copyIndex()],'-',parameters('region'))]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.Resources/resourceGroups/', parameters('rgName'))]"
+    //   ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "type": "Microsoft.Authorization/locks",
+              "apiVersion": "2016-09-01",
+              "name": "CanNoDelete",
+              "properties": {
+                "level": "CanNotDelete",
+                "notes": "Resource group and its resources should not be deleted."
+              }
+            }
+          ],
+          "outputs": {}
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}

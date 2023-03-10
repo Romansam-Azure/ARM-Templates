@@ -1,0 +1,60 @@
+{
+  
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        
+      "envName": {
+            "type": "String",
+            "metadata": {
+                "description": "Environment Name"
+            }
+        },       
+        "regionsuffix":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure Region name in short"
+            }
+        },
+        "region":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure Region name in short"
+            }
+        },
+        
+        "spoke-subscriptionID":{
+            "type":"string",
+            "metadata":{
+                "descriptoin" :"Spoke Vnet Subscription ID"
+        }
+}
+
+
+    },
+        "variables": {
+        "hub-vnet-name": "[concat('vnet-hub-shd-',parameters('regionsuffix'))]",
+        "spoke-vnet-name":"[concat('vnet-',parameters('envName'),'-shd-',parameters('regionsuffix'))]",
+        "spoke-vnet-resource-group":"[concat('rg-',parameters('envName'),'-shd-network-',parameters('regionsuffix'))]",
+        "peering-name-hub-to-spoke": "[concat('hub-',parameters('region'),'-vnet-to-',parameters('envName'),'-shd-',parameters('region'),'-vnet-peering')]"
+    },
+    "resources": [
+        {
+            "comments": "Hub & spoke Virtual network are in different group. Here peering is done from hub one to spoke",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(variables('hub-vnet-name'), '/', variables('peering-name-hub-to-spoke'))]",
+            "tags": "[parameters('resourceTags')]",
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId(parameters('spoke-subscriptionID'),variables('spoke-vnet-resource-group'),'Microsoft.Network/virtualNetworks', variables('spoke-vnet-name'))]"
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

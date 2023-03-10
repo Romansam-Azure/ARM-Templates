@@ -1,0 +1,276 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "routetablecustom": {
+            "type": "array",
+            "defaultValue":[
+
+                {
+                "Name":"pep"               
+                },
+                {
+                "Name":"web"               
+                },
+                {
+                "Name":"app"               
+                },
+                {
+                "Name":"db"               
+                }
+                
+                
+            ]
+        },
+        "nsgName": {
+            "type": "array",
+            "defaultValue":[
+
+                {
+                "Name":"pep"               
+                },
+                {
+                "Name":"web"               
+                },
+                {
+                "Name":"app"               
+                },
+                {
+                "Name":"db"               
+                }
+                
+                
+            ]
+        },
+        "subnetsConfiguration":{
+            "type": "array",
+            "defaultValue":[
+                {
+                    "name": "pep",
+                    "snetaddressSuffix": ".1.128/27",
+                    "nsgSuffix":"pep",
+                    "routeTableSuffix":"pep"
+                },
+                {
+                    "name": "web",
+                    "snetaddressSuffix": ".1.0/26",
+                    "nsgSuffix":"web",
+                    "routeTableSuffix":"web"
+                },
+                {
+                    "name": "app",
+                    "snetaddressSuffix": ".0.0/26",
+                    "nsgSuffix":"app",
+                    "routeTableSuffix":"app"
+                },
+                {
+                    "name": "db",
+                    "snetaddressSuffix": ".1.64/26",
+                    "nsgSuffix":"db",
+                    "routeTableSuffix":"db"
+                }
+            ]
+
+        },
+      "envName": {
+            "type": "string",
+            "metadata": {
+                "description": "Environment Name: dev / stg /prod"
+            }
+        
+        },
+       
+        "regionsuffix":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure regionsuffix name in short"
+            }
+            
+        },
+         "region":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure region name in short - aue"
+            }
+        },  
+     
+
+        "spoke-vnet-address-prefix":{
+            "type": "string",
+            "metadata":{
+                "discription":"Spoke Vnet Address space"
+            }
+        },
+
+        
+        // "DNSServerAddress": {
+        //     "type": "Array",
+        //     "defaultValue":"",
+        //     "metadata": {
+        //         "Description": "The DNS address(es) of the DNS Server(s) used by the VNET"
+        //     }
+        // },
+
+
+        
+        "hub-subscriptionID":{
+            "type":"string",
+            "metadata":{
+                "descriptoin" :"Hub Vnet Subscription ID"
+            }
+        }
+    },
+    "variables": {
+        "hub-vnet-name": "[concat('vnet-hub-shd-',parameters('regionsuffix'))]",
+        "spoke-vnet-name":"[concat('vnet-',parameters('envName'),'-shd-',parameters('regionsuffix'))]",
+        //"peering-name-hub-to-spoke-one": "[concat('peer-',variables('spoke-vnet-name'))]",
+        "peering-name-spoke-to-hub-one": "[concat(parameters('envName'),'-shd-',parameters('region'),'-spoke-to-hub-',parameters('region'),'-vnet-peering')]",
+        "hub-vnet-resource-group":"[concat('rg-hub-shd-network-',parameters('regionsuffix'))]",
+        "nsgNameprefix":"[concat('nsg-snet-',parameters('envName'),'-shd-')]",
+        //"spoke-vnet-resource-group":"[concat('rg-','-',parameters('envName'),'-network-',parameters('regionsuffix'))]",
+        "routetableprefix":"[concat('rt-snet-',parameters('envName'),'-shd-')]",
+        "subnetprefix:":"[concat('snet-',parameters('envName'),'-shd-')]",
+        
+        "diskaccessgroup":"[concat('dag-',parameters('envName'),'-shd-',parameters('regionsuffix'))]"
+    },
+    "resources": [
+        {
+        "copy": {
+        "name": "routetable",
+        "count": "[length(parameters('routetablecustom'))]"
+        }, 
+                    
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2020-11-01",
+             "name": "[concat(variables('routetableprefix'),toLower(parameters('routetablecustom')[CopyIndex()].Name),'-',parameters('regionsuffix'))]",
+            "location": "[resourceGroup().location]",
+            "tags": "[parameters('resourceTags')]",
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": []
+            }
+        
+        },
+    
+        {
+        "copy": {
+        "name": "nsggroup",
+        "count": "[length(parameters('nsgName'))]"
+        },
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2020-03-01",
+            "name": "[concat(variables('nsgNameprefix'),toLower(parameters('nsgName')[CopyIndex()].Name),'-',parameters('regionsuffix'))]",
+            "location": "[resourceGroup().location]",
+           "tags": "[parameters('resourceTags')]",
+            "properties": {
+                "securityRules": [
+ 
+                ]
+            }
+        },
+         {
+            "type": "Microsoft.Compute/diskAccesses",
+            "apiVersion": "2021-12-01",
+            "name": "[variables('diskaccessgroup')]",
+            "location": "[resourceGroup().location]",
+            "tags": "[parameters('resourceTags')]",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2021-01-01",
+            "name": "[variables('spoke-vnet-name')]",
+            "location": "[resourceGroup().location]",
+            "tags": "[parameters('resourceTags')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                       "[concat(parameters('spoke-vnet-address-prefix'),'.0.0/22')]"
+                    ]
+                },
+                "copy": [
+                    {
+                        "name": "subnets",
+                        "count": "[length(parameters('subnetsConfiguration'))]",
+                        "input": {
+                            "name": "[concat(variables('subnetprefix:'),toLower(parameters('subnetsConfiguration')[copyIndex('subnets')].name),'-',parameters('regionsuffix'))]",
+                            "properties": {
+                                 "addressPrefix": "[concat(parameters('spoke-vnet-address-prefix'),parameters('subnetsConfiguration')[copyIndex('subnets')].snetaddressSuffix)]",
+                                 "routeTable": {
+                                 "id": "[resourceId('Microsoft.Network/routeTables', concat(variables('routetableprefix'),toLower(parameters('subnetsConfiguration')[copyIndex('subnets')].routeTableSuffix),'-',parameters('regionsuffix')))]"
+                                 },
+                                 "privateEndpointNetworkPolicies": "Disabled",
+                                "privateLinkServiceNetworkPolicies": "Disabled",
+                                "networkSecurityGroup": {   
+                                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups',concat(variables('nsgNameprefix'),toLower(parameters('subnetsConfiguration')[copyIndex('subnets')].nsgSuffix),'-',parameters('regionsuffix')))]"
+                                
+                  },
+                                "serviceEndpoints": [
+                    {
+                        "service": "Microsoft.Sql",
+                        "locations": [
+                            "australiaeast"
+                        ]
+                    },
+                    {
+                        "service": "Microsoft.Storage",
+                        "locations": [
+                            "[resourceGroup().location]"
+                        ]
+                    },
+                    {
+                        "service": "Microsoft.EventHub",
+                        "locations": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "service": "Microsoft.KeyVault",
+                        "locations": [
+                           "[resourceGroup().location]"
+                        ]
+                    },
+                    {
+                        "service": "Microsoft.AzureActiveDirectory",
+                        "locations": [
+                            "[resourceGroup().location]"
+                        ]
+                    }
+                ]
+                            
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "Hub & spoke Virtual network are in different group. Here peering is done from spoke  to hub",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2022-01-01",
+            "name": "[concat(variables('spoke-vnet-name'), '/', variables('peering-name-spoke-to-hub-one'))]",
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId(parameters('hub-subscriptionID'),variables('hub-vnet-resource-group'),'Microsoft.Network/virtualNetworks', variables('hub-vnet-name'))]"
+                },
+                "remoteAddressSpace": {
+                                "addressPrefixes": [
+                                    "10.10.0.0/16"
+                                ]
+                            },
+                "remoteVirtualNetworkAddressSpace": {
+                                "addressPrefixes": [
+                                    "10.10.0.0/16"
+                                ]
+                            }
+            },
+        "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke-vnet-name'))]"
+        ]
+        }
+    ]
+}

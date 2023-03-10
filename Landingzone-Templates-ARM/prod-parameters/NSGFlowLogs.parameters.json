@@ -1,0 +1,41 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "envName": {
+            "value": "#envname#"
+        },
+        "regionsuffix": {
+            "value": "#regionsuffix#"
+        },
+        "storageregion":{
+            "value":"#storageregion#"
+        },
+        "hub-subscriptionID":{
+            "value":"#hub-subscriptionID#"
+        },
+        "storageName": {
+            "value":[
+                            {
+                            "Name":"rlsansglogprdshd"  ,
+                            "existingNSG1":"app",
+                            "existingNSG2":"db",
+                            "existingNSG3":"pep",
+                            "existingNSG4":"web"             
+                            },
+                            {
+                            "Name":"rlsansglognpdshd",
+                            "existingNSG1":"app",
+                            "existingNSG2":"db",
+                            "existingNSG3":"pep",
+                            "existingNSG4":"web"               
+                            }                    
+                        ]
+        },
+        "networkWatcherName":{
+            "value":"#networkWatcherName#"
+        }
+
+        
+    }
+}

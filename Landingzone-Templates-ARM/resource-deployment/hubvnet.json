@@ -1,0 +1,679 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceTags": {
+            "type": "object",
+            "defaultvalue": {
+            "CostCenter":"",  
+            "Environment": "",
+		    "ApplicationName": "",
+            "Owner": "Retirement Living",
+		    "Criticality":"High",
+		    "Department":"",
+		    "MaintenanceWindow":"",
+		    "DataClassification":"Sensitive",
+		    "ApplicationType":"",
+		    "BackupPlan":""
+            }
+        },
+         "envName": {
+            "type": "String",
+            "metadata": {
+                "description": "Environment Name"
+            }
+        },       
+        "regionsuffix":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure Region name in short"
+            }
+        },
+        "hub-vnet-address-prefix":{
+            "type": "string",
+            "metadata":{
+                "discription":"Shared Vnet Address range"
+            }
+        },
+        "nsgName": {
+            "type": "array",
+            "defaultValue":[
+
+                {
+                "Name":"pep"               
+                },
+                {
+                "Name":"dfjsvs"               
+                },
+                {
+                "Name":"mgmt"               
+                }
+                
+                
+            ]
+        },
+        // "DNSServerAddress": {
+        //     "type": "Array",
+        //     "defaultValue":["10.235.6.4","10.235.7.4"],
+        //     "metadata": {
+        //         "Description": "The DNS address(es) of the DNS Server(s) used by the VNET"
+        //     }
+        // },
+
+       
+        "routetablecustom":{
+            "type": "array"
+        },
+        
+        "routetable": {
+            "type": "array"
+        }
+
+    },
+    "variables": {
+        "hub-vnet-name": "[concat('vnet-',parameters('envName'),'-dfj-',parameters('regionsuffix'))]",   
+        "bastionnsgName": "nsg-AzureBastionSubnet",
+        "applicationGatewaySubnetnsgName":"nsg-ApplicationGatewaySubnet",
+        "azurefirewallSubnetnsgName":"nsg-AzureFirewallSubnet",
+        "routetableprefix":"[concat('rt-snet-',parameters('envName'),'-dfj-')]",
+        "privateEndpointSubnetName":"[concat('snet-',parameters('envName'),'-dfj-pep-',parameters('regionsuffix'))]",
+        "sharedServersSubnetName":"[concat('snet-',parameters('envName'),'-dfj-dfjsvs-',parameters('regionsuffix'))]",
+        "managementSubnetName":"[concat('snet-',parameters('envName'),'-dfj-mgmt-',parameters('regionsuffix'))]",
+        "gatewayroutetablename":"rt-GatewaySubnet",
+        "applicationgatewayroutetablename":"rt-ApplicationGatewaySubnet",
+        "privateendpointroutetablename":"[concat('rt-snet-',parameters('envName'),'-dfj-pep-',parameters('regionsuffix'))]",
+        "sharedserversroutetablename":"[concat('rt-snet-',parameters('envName'),'-dfj-dfjsvs-',parameters('regionsuffix'))]",
+        "sharedserversnsgname":"[concat('nsg-snet-',parameters('envName'),'-dfj-dfjsvs-',parameters('regionsuffix'))]",
+        "privateendpointnsgname":"[concat('nsg-snet-',parameters('envName'),'-dfj-pep-',parameters('regionsuffix'))]",
+        "managementroutetablename":"[concat('rt-snet-',parameters('envName'),'-dfj-mgmt-',parameters('regionsuffix'))]",
+        "managementnsgname":"[concat('nsg-snet-',parameters('envName'),'-dfj-mgmt-',parameters('regionsuffix'))]",
+        "diskaccessgroup":"[concat('dag-',parameters('envName'),'-dfj-',parameters('regionsuffix'))]",
+        "nsgNameprefix":"[concat('nsg-snet-',parameters('envName'),'-dfj-')]"
+
+
+        
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/diskAccesses",
+            "apiVersion": "2021-12-01",
+            "name": "[variables('diskaccessgroup')]",
+            "location": "[resourceGroup().location]",
+            "tags": "[parameters('resourceTags')]",
+            "properties": {}
+        },
+        {
+            "apiVersion": "2020-11-01",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('bastionnsgName')]",
+            "location": "[resourceGroup().location]",
+            "tags": "[parameters('resourceTags')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "Allow_HttpsInbound_IN",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "Internet",
+                            "destinationPortRange": "443",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "Allow_GatewayManager_IN",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "GatewayManager",
+                            "destinationPortRange": "443",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "Allow_LoadBalancer_IN",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "AzureLoadBalancer",
+                            "destinationPortRange": "443",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "BastionHostCommunication_IN",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationPortRanges": [
+                                "8080",
+                                "5701"
+                            ],
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 130,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "Explicit_Deny_All_Inbound_IN",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationPortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 200,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "Allow_RlpSsh_OUT",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationPortRanges": [
+                                "22",
+                                "3389"
+                            ],
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "Allow_AzureCloud_OUT",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationPortRange": "443",
+                            "destinationAddressPrefix": "AzureCloud",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "BastionHostCommunication_OUT",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationPortRanges": [
+                                "8080",
+                                "5701"
+                            ],
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "AllowGetSessionInformationOutBound",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "Internet",
+                            "destinationPortRanges": [
+                                "80"
+                            ],
+                            "access": "Allow",
+                            "priority": 130,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "Explicit_DenyAll_Outbound_OUT",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 200,
+                            "direction": "Outbound"
+                        }
+                    }
+                ]
+            }
+        },
+        
+       
+        
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-09-01",
+            "name": "[variables('azurefirewallSubnetnsgName')]",
+            "location": "[resourceGroup().location]",
+            "tags": "[parameters('resourceTags')]",
+            "properties": {
+                "securityRules": []
+            }
+        },
+        
+ 
+        
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-09-01",
+            "name": "[variables('applicationGatewaySubnetnsgName')]",
+            "location": "[resourceGroup().location]",
+        
+            "properties": {
+                "securityRules": [{
+                    "name":"Allow_Internet_OUT",
+                    "properties":{
+                        "protocol": "*",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "*",
+                        "sourceAddressPrefix": "VirtualNetwork",
+                        "destinationAddressPrefix": "Internet",
+                        "access": "Allow",
+                        "priority": 140,
+                        "direction": "Outbound",
+                        "sourcePortRanges": [],
+                        "destinationPortRanges": [],
+                        "sourceAddressPrefixes": [],
+                        "destinationAddressPrefixes": []
+                        }
+                },
+                {
+                    "name":"Allow_LoadBalancer_IN",
+                    "properties":{
+                        "protocol": "*",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "*",
+                        "sourceAddressPrefix": "AzureLoadBalancer",
+                        "destinationAddressPrefix": "VirtualNetwork",
+                        "access": "Allow",
+                        "priority": 140,
+                        "direction": "Inbound",
+                        "sourcePortRanges": [],
+                        "destinationPortRanges": [],
+                        "sourceAddressPrefixes": [],
+                        "destinationAddressPrefixes": []
+                        }
+                },
+                {
+                    "name":"Allow_vNet_IN",
+                    "properties":{
+                        "protocol": "*",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "*",
+                        "sourceAddressPrefix": "VirtualNetwork",
+                        "destinationAddressPrefix": "VirtualNetwork",
+                        "access": "Allow",
+                        "priority": 130,
+                        "direction": "Inbound",
+                        "sourcePortRanges": [],
+                        "destinationPortRanges": [],
+                        "sourceAddressPrefixes": [],
+                        "destinationAddressPrefixes": []
+                        }
+                },
+                {
+                    "name":"Allow_vNet_OUT",
+                    "properties":{
+                        "protocol": "*",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "*",
+                        "sourceAddressPrefix": "VirtualNetwork",
+                        "destinationAddressPrefix": "VirtualNetwork",
+                        "access": "Allow",
+                        "priority": 130,
+                        "direction": "Outbound",
+                        "sourcePortRanges": [],
+                        "destinationPortRanges": [],
+                        "sourceAddressPrefixes": [],
+                        "destinationAddressPrefixes": []
+                        }
+                },
+                {
+                    "name":"Explicit_Deny_All_Inbound_IN",
+                    "properties":{
+                        "protocol": "*",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "*",
+                        "sourceAddressPrefix": "*",
+                        "destinationAddressPrefix": "*",
+                        "access": "Deny",
+                        "priority": 200,
+                        "direction": "Inbound",
+                        "sourcePortRanges": [],
+                        "destinationPortRanges": [],
+                        "sourceAddressPrefixes": [],
+                        "destinationAddressPrefixes": []
+                        }
+                },
+                {
+                    "name":"Explicit_Deny_All_Inbound_OUT",
+                    "properties":{
+                         "protocol": "*",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "*",
+                        "sourceAddressPrefix": "*",
+                        "destinationAddressPrefix": "*",
+                        "access": "Deny",
+                        "priority": 200,
+                        "direction": "Outbound",
+                        "sourcePortRanges": [],
+                        "destinationPortRanges": [],
+                        "sourceAddressPrefixes": [],
+                        "destinationAddressPrefixes": []
+                        }
+                }
+                
+                    
+                    
+                ]
+            }
+        },
+        
+    {
+        "copy": {
+        "name": "nsggroup",
+        "count": "[length(parameters('nsgName'))]"
+        },
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2020-03-01",
+            "name": "[concat(variables('nsgNameprefix'),toLower(parameters('nsgName')[CopyIndex()].Name),'-',parameters('regionsuffix'))]",
+            "location": "[resourceGroup().location]",
+           "tags": "[parameters('resourceTags')]",
+            "properties": {
+                "securityRules": [
+ 
+                ]
+            }
+        },
+       
+        {
+        "copy": {
+        "name": "routetable",
+        "count": "[length(parameters('routetable'))]"
+        }, 
+                    
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2020-11-01",
+             "name": "[concat('rt-',toLower(parameters('routetable')[CopyIndex()].Name))]",
+            "location": "[resourceGroup().location]",
+            "tags": "[parameters('resourceTags')]",
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": []
+            }
+        
+        },
+        {
+        "copy": {
+        "name": "routetablecustom",
+        "count": "[length(parameters('routetablecustom'))]"
+        }, 
+                    
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2020-11-01",
+             "name": "[concat(variables('routetableprefix'),toLower(parameters('routetablecustom')[CopyIndex()].Name),'-',parameters('regionsuffix'))]",
+            "location": "[resourceGroup().location]",
+            "tags": "[parameters('resourceTags')]",
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": []
+            }
+        
+        },
+        {  
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('hub-vnet-name')]",
+            "location": "[resourceGroup().location]",
+            "tags": "[parameters('resourceTags')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[concat(parameters('hub-vnet-address-prefix'),'.0.0/16')]"
+                    ]
+                },
+                // "dhcpOptions": {
+                //     "dnsServers": "[parameters('DNSServerAddress')]"
+                // },
+                "subnets": [
+                    {
+                        "name": "AzureBastionSubnet",
+                        "properties": {
+                            "addressPrefix": "[concat(parameters('hub-vnet-address-prefix'),'.0.192/26')]",
+                            
+                            "networkSecurityGroup": {
+                            "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('bastionnsgName'))]"
+                        },
+                        
+                        "serviceEndpoints": [
+                            
+                            ]
+                        }
+                    },
+
+                    { 
+                        "name": "ApplicationGatewaySubnet",
+                        "properties": {
+                            "addressPrefix":"[concat(parameters('hub-vnet-address-prefix'),'.0.128/26')]",
+                            
+                            "networkSecurityGroup": {
+                            "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('ApplicationGatewaySubnetnsgName'))]"
+                        },
+                        "routeTable": {
+                            "id": "[resourceId('Microsoft.Network/routeTables', variables('applicationgatewayroutetablename'))]"
+                        },
+                            "serviceEndpoints": [
+                                
+                            ]    
+                        }
+                    },
+            
+                        
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[concat(parameters('hub-vnet-address-prefix'),'.0.0/26')]",
+                         "routeTable": {
+                            "id": "[resourceId('Microsoft.Network/routeTables', variables('gatewayroutetablename'))]"
+                        },   
+                            
+                        "serviceEndpoints": [
+                            
+                        ]
+                     }
+                    },    
+                    
+                    {
+                        "name": "AzureFirewallSubnet",
+                        "properties": {
+                            "addressPrefix": "[concat(parameters('hub-vnet-address-prefix'),'.0.64/26')]",
+                      
+                            
+                            "serviceEndpoints": [
+                            
+                        ]
+                        }
+                    },
+                    {
+                    
+                        
+                            "name": "[variables('privateEndpointSubnetName')]",
+                            "properties": {
+                            "addressPrefix": "[concat(parameters('hub-vnet-address-prefix'),'.1.0/26')]",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', variables('privateendpointroutetablename'))]"
+                            },
+                             "networkSecurityGroup": {
+                            "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('privateendpointnsgname'))]"
+                        },
+                            
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Disabled",
+                            "serviceEndpoints": [
+                            {
+                                "service": "Microsoft.Sql",
+                                "locations": [
+                                    "[resourceGroup().location]"
+                                ]
+                            },
+                            {
+                                "service": "Microsoft.Storage",
+                                "locations": [
+                                "[resourceGroup().location]"
+                                ]
+                            },
+                            {
+                                "service": "Microsoft.KeyVault",
+                                "locations": [
+                                    "[resourceGroup().location]"
+                                ]
+                            },
+                            {
+                                "service": "Microsoft.AzureActiveDirectory",
+                                "locations": [
+                                    "[resourceGroup().location]"
+                                ]
+                            },
+                            {
+                                "service": "Microsoft.EventHub",
+                                "locations": [
+                                    "[resourceGroup().location]"
+                                ]
+                            }
+                            ]
+                        }
+                    },
+                    {
+                    
+                        
+                            "name": "[variables('sharedServersSubnetName')]",
+                            "properties": {
+                            "addressPrefix": "[concat(parameters('hub-vnet-address-prefix'),'.1.64/26')]",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', variables('sharedserversroutetablename'))]"
+                            },
+                            "networkSecurityGroup": {
+                            "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('sharedserversnsgname'))]"
+                            },
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Disabled",
+                            "serviceEndpoints": [
+                            {
+                                "service": "Microsoft.Sql",
+                                "locations": [
+                                    "[resourceGroup().location]"
+                                ]
+                            },
+                            {
+                                "service": "Microsoft.Storage",
+                                "locations": [
+                                "[resourceGroup().location]"
+                                ]
+                            },
+                            {
+                                "service": "Microsoft.KeyVault",
+                                "locations": [
+                                    "[resourceGroup().location]"
+                                ]
+                            },
+                            {
+                                "service": "Microsoft.AzureActiveDirectory",
+                                "locations": [
+                                    "[resourceGroup().location]"
+                                ]
+                            },
+                            {
+                                "service": "Microsoft.EventHub",
+                                "locations": [
+                                    "[resourceGroup().location]"
+                                ]
+                            }
+                            ]
+                        }
+                    },
+                    {
+                    
+                        
+                            "name": "[variables('managementSubnetName')]",
+                            "properties": {
+                            "addressPrefix": "[concat(parameters('hub-vnet-address-prefix'),'.1.128/26')]",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', variables('managementroutetablename'))]"
+                            },
+                            "networkSecurityGroup": {
+                            "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('managementnsgname'))]"
+                            },
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Disabled",
+                            "serviceEndpoints": [
+                            {
+                                "service": "Microsoft.Sql",
+                                "locations": [
+                                    "[resourceGroup().location]"
+                                ]
+                            },
+                            {
+                                "service": "Microsoft.Storage",
+                                "locations": [
+                                "[resourceGroup().location]"
+                                ]
+                            },
+                            {
+                                "service": "Microsoft.KeyVault",
+                                "locations": [
+                                    "[resourceGroup().location]"
+                                ]
+                            },
+                            {
+                                "service": "Microsoft.AzureActiveDirectory",
+                                "locations": [
+                                    "[resourceGroup().location]"
+                                ]
+                            },
+                            {
+                                "service": "Microsoft.EventHub",
+                                "locations": [
+                                    "[resourceGroup().location]"
+                                ]
+                            }
+                            ]
+                        }
+                    }
+                ]
+                  
+                
+            }
+            ,
+            "dependsOn": [
+                             "[resourceId('Microsoft.Network/networkSecurityGroups', variables('bastionnsgName'))]",
+                             "[resourceId('Microsoft.Network/networkSecurityGroups', variables('applicationGatewaySubnetnsgName'))]",
+                              "[resourceId('Microsoft.Network/networkSecurityGroups', variables('azurefirewallSubnetnsgName'))]"
+                            
+
+                        ]
+                    
+        }
+    ]
+}
+
+                        
+                                                 
+           
+               

@@ -1,0 +1,36 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "envName": {
+            "value": "#envname#"
+        },
+        "regionsuffix": {
+            "value": "#regionsuffix#"
+        },
+        "sampleGraphicalRunbookName": {
+            "value": "AzureAutomationTutorial"
+        },
+        "sampleGraphicalRunbookDescription": {
+            "value": "An example runbook that gets all the Resource Manager resources by using the Run As account (service principal)."
+        },
+        "samplePowerShellRunbookName": {
+            "value": "AzureAutomationTutorialScript"
+        },
+        "samplePowerShellRunbookDescription": {
+            "value": "An example runbook that gets all the Resource Manager resources by using the Run As account (service principal)."
+        },
+        "samplePython2RunbookName": {
+            "value": "AzureAutomationTutorialPython2"
+        },
+        "samplePython2RunbookDescription": {
+            "value": "An example runbook that gets all the Resource Manager resources by using the Run As account (service principal)."
+        },
+        "_artifactsLocation": {
+            "value": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/quickstarts/microsoft.automation/101-automation/azuredeploy.json"
+        },
+        "_artifactsLocationSasToken": {
+            "value": ""
+        }
+    }
+}

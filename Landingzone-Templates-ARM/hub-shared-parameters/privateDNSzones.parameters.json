@@ -1,0 +1,49 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "privateDnsZones": {
+            "value": [
+            
+                            {
+                            "Name":"privatelink.blob.core.windows.net",
+                            "prdstorageipv4AddressSuffix":".1.4",
+                            "npdstorageipv4AddressSuffix":".1.5"                 
+                            },
+                            {
+                            "Name":"privatelink.file.core.windows.net"   ,
+                            "prdstorageipv4AddressSuffix":".1.6",
+                            "npdstorageipv4AddressSuffix":".1.7"               
+                            },
+                            {
+                            "Name":"privatelink.vaultcore.azure.net"   ,
+                            "prdstorageipv4AddressSuffix":".1.8",
+                            "npdstorageipv4AddressSuffix":".1.9"              
+                            }
+                            
+                            
+                        ]
+        },
+        "hub-subscriptionID": {
+            "value": "#hub-subscriptionID#" 
+        },
+        "regionsuffix": {
+            "value": "#regionsuffix#" 
+        },
+        "envName": {
+            "value": "#envName#" 
+        },
+        "storageregion": {
+            "value": "#storageregion#" 
+        },
+        "spoke-vnet-address-prefix": {
+            "value": "#spoke-vnet-address-prefix#" 
+        },
+        "region": {
+            "value": "#region#" 
+        },
+        "privatelink": {
+            "value": "#privatelink#" 
+        }
+    }
+}

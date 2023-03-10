@@ -1,0 +1,141 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "envName": {
+            "type": "String",
+            "metadata": {
+                "description": "Environment Name: dev / stg /prod"
+            }
+        },
+         "storageregion":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure Region name in short"
+            }
+        },
+        "hub-subscriptionID":{
+          "type": "string",
+            "metadata":{
+                "description":"Hub Subscription ID"
+        }
+        },
+          "regionsuffix":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure regionsuffix name in short"
+            }
+            
+        },
+        "storageName": {
+            "type": "array",
+            "defaultValue":[
+                            {
+                            "Name":"rlsansglogprddfj"               
+                            },
+                            {
+                            "Name":"rlsansglogndpdfj"               
+                            }                    
+                        ]
+        },
+          "spoke-vnet-address-prefix":{
+          "type": "string",
+          "metadata":{
+            "description":"Spoke Vnet prefix"
+          }
+        },
+
+        "region":{
+        "type": "string",
+        "metadata":{
+         "description":"Pirmary Azure Region name in short"
+         }
+        }
+    },
+    "variables": {
+        "storagePrivateEndpointSuffix":"[concat('-pep-',parameters('regionsuffix'))]",
+      
+      "storage-resource-group":"[concat('rg-hub-dfj-storage-',parameters('region'))]",
+      "hub-vnet-resource-group":"[concat('rg-hub-dfj-network-',parameters('region'))]",
+      "hub-vnet-resource-group-zone":"rg-hub-dfj-network-auet-a-01",
+      "hub-vnet-name": "[concat('vnet-hub-dfj-',parameters('regionsuffix'))]",
+      "pep-subnet-name":"[concat('snet-',parameters('envName'),'-dfj-pep-',parameters('regionsuffix'))]",
+      "privatelinkblob":"privatelink.blob.core.windows.net"
+      
+
+    },
+    "resources": [
+        {
+        "copy": {
+        "name": "storageName",
+        "count": "[length(parameters('storageName'))]"
+        },
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2021-05-01",
+            //"name": "[concat(parameters('storageName')[CopyIndex()].Name,parameters('storageregion'),variables('storagePrivateEndpointSuffix'))]",
+            "name":"[concat(parameters('storageName')[CopyIndex()].Name,parameters('storageregion'),variables('storagePrivateEndpointSuffix'))]",
+            "location": "australiaeast",
+            "tags": "[resourceGroup().tags]",
+            "properties": {
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "[concat(parameters('storageName')[CopyIndex()].Name,parameters('storageregion'),variables('storagePrivateEndpointSuffix'))]",
+                        //"id": "[concat(resourceId('Microsoft.Network/privateEndpoints', concat(parameters('storageName')[CopyIndex()].Name,parameters('storageregion'),variables('storagePrivateEndpointSuffix')), concat('/privateLinkServiceConnections/', concat(parameters('storageName')[CopyIndex()].Name,parameters('storageregion'),variables('storagePrivateEndpointSuffix')))))]",
+                        //"id": "[concat(resourceId('Microsoft.Network/privateEndpoints', concat(parameters('storageName')[CopyIndex()].Name,parameters('storageregion'),variables('storagePrivateEndpointSuffix')), concat('/privateLinkServiceConnections/', concat(parameters('storageName')[CopyIndex()].Name,parameters('storageregion'),variables('storagePrivateEndpointSuffix')))))]",
+                        "properties": {
+                            "privateLinkServiceId": "[resourceId(variables('storage-resource-group'),'Microsoft.Storage/storageAccounts',concat(parameters('storageName')[CopyIndex()].Name,parameters('storageregion')))]",
+                            "groupIds": [
+                                "blob"
+                            ],
+                            "privateLinkServiceConnectionState": {
+                                "status": "Approved",
+                                "description": "Auto-Approved",
+                                "actionsRequired": "None"
+                            }
+                        }
+                    }
+                ],
+                "manualPrivateLinkServiceConnections": [],
+                "customNetworkInterfaceName": "[concat(concat(parameters('storageName')[CopyIndex()].Name,parameters('storageregion'),variables('storagePrivateEndpointSuffix'), '-nic'))]",
+                "subnet": {
+                    //"id": "[concat(parameters('virtualNetworks_vnet_hub_dfj_auet_a_01_externalid'), '/subnets/snet-hub-dfj-pep-auet-a-01')]"
+                    "id": "[resourceId(toLower(variables('hub-vnet-resource-group')),'Microsoft.Network/virtualNetworks/subnets', toLower(variables('hub-vnet-name')),variables('pep-subnet-name'))]"
+                    
+                },
+                "ipConfigurations": [],
+                "customDnsConfigs": [
+                    {
+                        //"fqdn": "rlsansgloghubdfjaueta01.blob.core.windows.net",
+                        "fqdn":"[concat(concat(toLower(parameters('storageName')[CopyIndex()].Name),parameters('storageregion')),'privatelink.blob.core.windows.net')]",
+                        "ipAddresses": [
+                            "[concat(parameters('spoke-vnet-address-prefix'),'.1.4')]"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+        "copy": {
+        "name": "storageName",
+        "count": "[length(parameters('storageName'))]"
+        },
+            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+            "apiVersion": "2021-05-01",
+            "name": "[concat(concat(parameters('storageName')[CopyIndex()].Name,parameters('storageregion'),variables('storagePrivateEndpointSuffix')), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', concat(parameters('storageName')[CopyIndex()].Name,parameters('storageregion'),variables('storagePrivateEndpointSuffix')))]"
+            ],
+            "properties": {
+                "privateDnsZoneConfigs": [
+             {
+                    "name": "privatelink-blob-core-windows-net",
+                        "properties": {
+                            
+                            "privateDnsZoneId":"[resourceId(toLower(variables('hub-vnet-resource-group-zone')),'Microsoft.Network/privateDnsZones',variables('privatelinkblob'))]"
+                        }
+            }
+                ]
+            }
+        }
+    ]
+}

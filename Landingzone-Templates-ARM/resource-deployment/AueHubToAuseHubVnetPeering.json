@@ -1,0 +1,90 @@
+{
+  
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        
+      "envName": {
+            "type": "String",
+            "metadata": {
+                "description": "Environment Name"
+            }
+        },       
+        "regionsuffix":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure Region name in short"
+            }
+        },
+       "remoteregionsuffix":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure Region name in short"
+            }
+        },
+        "region":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure Region name in short"
+            }
+        },
+        
+        "hub-subscriptionID":{
+            "type":"string",
+            "metadata":{
+                "descriptoin" :"Spoke Vnet Subscription ID"
+        }
+        },
+        "remoteregion":{
+           "type":"string",
+            "metadata":{
+                "descriptoin" :"Remote region" 
+            }
+        }
+},
+
+
+    
+        "variables": {
+        "hub-vnet-name": "[concat('vnet-hub-shd-',parameters('regionsuffix'))]",
+        "hub-vnet-remote-name":"[concat('vnet-hub-shd-',parameters('remoteregionsuffix'))]",
+        
+        "hub-vnet-remote-resource-group":"[concat('rg-',parameters('envName'),'-shd-network-',parameters('remoteregionsuffix'))]",
+        
+        "peering-name-hub-to-ausehub": "[concat('hub-',parameters('region'),'-vnet-to-',parameters('envName'),'-',parameters('remoteregion'),'-vnet-peering')]"
+    },
+          "resources": [        
+                    {
+                        "comments": "Hub & spoke Virtual network are in different group. Here peering is done from hub one to spoke",
+                        "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                        "apiVersion": "2020-05-01",
+                        "name": "[concat(variables('hub-vnet-name'), '/', variables('peering-name-hub-to-ausehub'))]",
+                        //"id": "[resourceId('Microsoft.Network/virtualNetworks/virtualNetworkPeerings', variables('hub-vnet-name'), variables('peering-name-hub-to-ausehub'))]",
+                        "properties": {
+                            
+                            "peeringState": "Connected",
+                            "peeringSyncLevel": "FullyInSync",
+                            "remoteVirtualNetwork": {
+                                "id": "[resourceId(parameters('hub-subscriptionID'),variables('hub-vnet-remote-resource-group'),'Microsoft.Network/virtualNetworks', variables('hub-vnet-remote-name'))]"
+                            },
+                            "allowVirtualNetworkAccess": true,
+                            "allowForwardedTraffic": true,
+                            "allowGatewayTransit": false,
+                            "useRemoteGateways": false,
+                            "doNotVerifyRemoteGateways": false,
+                            "remoteAddressSpace": {
+                                "addressPrefixes": [
+                                    "10.40.0.0/16"
+                                ]
+                            },
+                            "remoteVirtualNetworkAddressSpace": {
+                                "addressPrefixes": [
+                                    "10.40.0.0/16"
+                                ]
+                            }
+                        }
+                        
+                    }
+          ],
+          "outputs":{}
+}

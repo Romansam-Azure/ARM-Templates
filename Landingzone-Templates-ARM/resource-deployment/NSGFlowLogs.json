@@ -1,0 +1,141 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.4.1124.51302",
+      "templateHash": "927733442062678948"
+    }
+  },
+  "parameters": {
+    "NSGName": {
+            "type": "array",
+            "defaultValue":[
+                             {
+                "Name":"pep"               
+                },
+                {
+                "Name":"web"               
+                },
+                {
+                "Name":"app"               
+                },
+                {
+                "Name":"db"               
+                }                  
+                        ]
+        },
+     "envName": {
+            "type": "String",
+            "metadata": {
+                "description": "Environment Name: dev / stg /prod"
+            }
+        },
+         "storageregion":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure Region name in short"
+            }
+        },
+        "hub-subscriptionID":{
+          "type": "string",
+            "metadata":{
+                "description":"Hub Subscription ID"
+        }
+        },
+          "regionsuffix":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure regionsuffix name in short"
+            }
+            
+        },
+        "networkWatcherName":{
+          "type":"string",
+          "metadata":{
+            "description":"NetworkWatcherName"
+          }
+        }
+
+  },
+
+  "variables": {
+ 
+  "hub-vnet-resource-group":"[concat('rg-hub-shd-network-',parameters('regionsuffix'))]",
+  "vnet-resource-group":"[concat('rg-',parameters('envName'),'-shd-network-',parameters('regionsuffix'))]",
+  "storageaccount-resource-group":"[concat('rg-hub-shd-network-',parameters('regionsuffix'))]",
+  "npdstoragename":"[concat('rlsansglognpdshd',parameters('storageregion'))]",
+  "prdstoragename":"[concat('rlsansglogprdshd',parameters('storageregion'))]",
+  "hub-vnet-name": "[concat('vnet-hub-shd-',parameters('regionsuffix'))]",
+  "shdsvs-subnet-name":"[concat('snet-',parameters('envName'),'-shd-shdsvs-',parameters('regionsuffix'))]",
+  "flowLogNamesuffix":"[concat('nsg-snet-',parameters('envName'),'-shd-pep-',parameters('regionsuffix'),'-',variables('vnet-resource-group'),'-flowlog')]",
+ "nsgNameprefix":"[concat('nsg-snet-',parameters('envName'),'-shd-')]"
+    },
+
+  "resources": [
+
+        
+    //     {
+    //   "type": "Microsoft.Network/networkWatchers",
+    //   "apiVersion": "2022-01-01",
+    //   "name": "[parameters('networkWatcherName')]",
+    //   "location": "[parameters('location')]",
+    //   "properties": {}
+    // },
+        {
+        "copy": {
+        "name": "NSGName",
+        "count": "[length(parameters('NSGName'))]"
+        },
+      "type": "Microsoft.Network/networkWatchers/flowLogs",
+      "apiVersion": "2022-01-01",
+      "name": "[format('{0}/{1}', parameters('networkWatcherName'), concat('nsg-snet-',parameters('envName'),'-shd-',toLower(parameters('NSGName')[CopyIndex()].name),variables('flowLogNamesuffix')))]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "targetResourceId": "[resourceId('Microsoft.Network/networkSecurityGroups',concat(variables('nsgNameprefix'),toLower(parameters('NSGName')[CopyIndex()].name)))]",
+        "storageId": "[resourceId(parameters('hub-subscriptionID'),variables('storageaccount-resource-group'),'Microsoft.Storage/storageAccounts', variables('prdstoragename'))]",
+        "enabled": true,
+        "retentionPolicy": {
+          "days": "7",
+          "enabled": true
+        },
+        "format": {
+          "type": "JSON",
+          "version": "2"
+        }
+      }
+     
+    },
+    {
+        "copy": {
+        "name": "NSGName",
+        "count": "[length(parameters('NSGName'))]"
+        },
+      "type": "Microsoft.Network/networkWatchers/flowLogs",
+      "apiVersion": "2022-01-01",
+      "name": "[format('{0}/{1}', parameters('networkWatcherName'), concat('nsg-snet-',parameters('envName'),'-shd-',toLower(parameters('NSGName')[CopyIndex()].name),variables('flowLogNamesuffix')))]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "targetResourceId": "[resourceId('Microsoft.Network/networkSecurityGroups',concat(variables('nsgNameprefix'),toLower(parameters('NSGName')[CopyIndex()].name)))]",
+        "storageId": "[resourceId(parameters('hub-subscriptionID'),variables('storageaccount-resource-group'),'Microsoft.Storage/storageAccounts', variables('npdstoragename'))]",
+        "enabled": true,
+        "retentionPolicy": {
+          "days": "7",
+          "enabled": true
+        },
+        "format": {
+          "type": "JSON",
+          "version": "2"
+        }
+      }
+     
+    }
+      
+        
+            
+         
+  ]
+}

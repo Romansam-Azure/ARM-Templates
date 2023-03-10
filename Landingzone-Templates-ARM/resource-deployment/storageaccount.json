@@ -1,0 +1,254 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.4.1124.51302",
+      "templateHash": "927733442062678948"
+    }
+  },
+  "parameters": {
+    "storageName": {
+            "type": "array",
+            "defaultValue":[
+                            {
+                            "Name":"rlsansglogprdaro",
+                            "existingNSG1":"app",
+                            "existingNSG2":"db",
+                            "existingNSG3":"pep",
+                            "existingNSG4":"web"
+                            },
+                            {
+                            "Name":"rlsansglognpdaro",
+                            "existingNSG1":"app",
+                            "existingNSG2":"db",
+                            "existingNSG3":"pep",
+                            "existingNSG4":"web"               
+                            }                    
+                        ]
+        },
+     "envName": {
+            "type": "String",
+            "metadata": {
+                "description": "Environment Name: dev / stg /prod"
+            }
+        },
+         "storageregion":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure Region name in short"
+            }
+        },
+        "hub-subscriptionID":{
+          "type": "string",
+            "metadata":{
+                "description":"Hub Subscription ID"
+        }
+        },
+          "regionsuffix":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure regionsuffix name in short"
+            }
+            
+        },
+        "networkWatcherName":{
+          "type":"string",
+          "metadata":{
+            "description":"NetworkWatcherName"
+          }
+        }
+
+  },
+
+  "variables": {
+  "storageAccountname":"[concat('rlsansglog',parameters('envName'),'aro',parameters('storageregion'))]",
+  "hub-vnet-resource-group":"[concat('rg-hub-aro-network-',parameters('regionsuffix'))]",
+  "hub-vnet-name": "[concat('vnet-hub-aro-',parameters('regionsuffix'))]",
+  "arosvs-subnet-name":"[concat('snet-',parameters('envName'),'-aro-arosvs-',parameters('regionsuffix'))]",
+  "flowLogName":"[concat('nsg-snet-',parameters('envName'),'-aro-pep-',parameters('regionsuffix'),'-',variables('hub-vnet-resource-group'),'-flowlog')]",
+ "nsgNameprefix":"[concat('nsg-snet-',parameters('envName'),'-aro-')]"
+    },
+
+  "resources": [
+{
+        "copy": {
+        "name": "storageName",
+        "count": "[length(parameters('storageName'))]"
+        },
+    
+       
+            "name": "[concat(toLower(parameters('storageName')[CopyIndex()].Name),parameters('storageregion'))]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-04-01",
+            "properties":{
+                "defaultToOAuthAuthentication": false,
+                "publicNetworkAccess": "Enabled",
+                "allowCrossTenantReplication": true,
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": false,
+                "allowSharedKeyAccess": true,
+                "networkAcls": {
+                    "resourceAccessRules": [],
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [
+                     
+                    ],
+                    "ipRules": [],
+                    "defaultAction": "Deny"
+                },
+                "accessTier": "hot",
+               
+                "supportsHttpsTrafficOnly": true
+            },
+            "location": "[resourceGroup().location]",
+            "tags": "[resourceGroup().tags]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            }
+        },
+        {
+          "copy": {
+        "name": "storageName",
+        "count": "[length(parameters('storageName'))]"
+        },
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(toLower(parameters('storageName')[CopyIndex()].Name),parameters('storageregion'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', concat(toLower(parameters('storageName')[CopyIndex()].Name),parameters('storageregion')))]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "allowPermanentDelete": false,
+                    "enabled": true,
+                    "days": 7
+                }
+            }
+        }
+    //     {
+    //   "type": "Microsoft.Network/networkWatchers",
+    //   "apiVersion": "2022-01-01",
+    //   "name": "[parameters('networkWatcherName')]",
+    //   "location": "[parameters('location')]",
+    //   "properties": {}
+    // },
+    //     {
+    //     "copy": {
+    //     "name": "storageName",
+    //     "count": "[length(parameters('storageName'))]"
+    //     },
+    //   "type": "Microsoft.Network/networkWatchers/flowLogs",
+    //   "apiVersion": "2022-01-01",
+    //   "name": "[format('{0}/{1}', parameters('networkWatcherName'), variables('flowLogName'))]",
+    //   "location": "[resourceGroup().location]",
+    //   "properties": {
+    //     "targetResourceId": "[resourceId(variables('hub-vnet-resource-group'),'Microsoft.Network/networkSecurityGroups',concat(variables('nsgNameprefix'),toLower(parameters('storageName')[CopyIndex()].existingNSG1)))]",
+    //     "storageId": "[resourceId('Microsoft.Storage/storageAccounts', concat(toLower(parameters('storageName')[CopyIndex()].Name),parameters('storageregion')))]",
+    //     "enabled": true,
+    //     "retentionPolicy": {
+    //       "days": "7",
+    //       "enabled": true
+    //     },
+    //     "format": {
+    //       "type": "JSON",
+    //       "version": "2"
+    //     }
+    //   },
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.Storage/storageAccounts', concat(toLower(parameters('storageName')[CopyIndex()].Name),parameters('storageregion')))]"
+    //   ]
+    // },
+    //   {
+    //     "copy": {
+    //     "name": "storageName",
+    //     "count": "[length(parameters('storageName'))]"
+    //     },
+    //   "type": "Microsoft.Network/networkWatchers/flowLogs",
+    //   "apiVersion": "2022-01-01",
+    //   "name": "[format('{0}/{1}', parameters('networkWatcherName'), variables('flowLogName'))]",
+    //   "location": "[resourceGroup().location]",
+    //   "properties": {
+    //     "targetResourceId": "[resourceId(variables('hub-vnet-resource-group'),'Microsoft.Network/networkSecurityGroups',concat(variables('nsgNameprefix'),toLower(parameters('storageName')[CopyIndex()].existingNSG2)))]",
+    //     "storageId": "[resourceId('Microsoft.Storage/storageAccounts', concat(toLower(parameters('storageName')[CopyIndex()].Name),parameters('storageregion')))]",
+    //     "enabled": true,
+    //     "retentionPolicy": {
+    //       "days": "7",
+    //       "enabled": true
+    //     },
+    //     "format": {
+    //       "type": "JSON",
+    //       "version": "2"
+    //     }
+    //   },
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.Storage/storageAccounts', concat(toLower(parameters('storageName')[CopyIndex()].Name),parameters('storageregion')))]"
+    //   ]
+    // } ,
+    // {
+    //     "copy": {
+    //     "name": "storageName",
+    //     "count": "[length(parameters('storageName'))]"
+    //     },
+    //   "type": "Microsoft.Network/networkWatchers/flowLogs",
+    //   "apiVersion": "2022-01-01",
+    //   "name": "[format('{0}/{1}', parameters('networkWatcherName'), variables('flowLogName'))]",
+    //   "location": "[resourceGroup().location]",
+    //   "properties": {
+    //     "targetResourceId": "[resourceId(variables('hub-vnet-resource-group'),'Microsoft.Network/networkSecurityGroups',concat(variables('nsgNameprefix'),toLower(parameters('storageName')[CopyIndex()].existingNSG3)))]",
+    //     "storageId": "[resourceId('Microsoft.Storage/storageAccounts', concat(toLower(parameters('storageName')[CopyIndex()].Name),parameters('storageregion')))]",
+    //     "enabled": true,
+    //     "retentionPolicy": {
+    //       "days": "7",
+    //       "enabled": true
+    //     },
+    //     "format": {
+    //       "type": "JSON",
+    //       "version": "2"
+    //     }
+    //   },
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.Storage/storageAccounts', concat(toLower(parameters('storageName')[CopyIndex()].Name),parameters('storageregion')))]"
+    //   ]
+    // },
+    // {
+    //     "copy": {
+    //     "name": "storageName",
+    //     "count": "[length(parameters('storageName'))]"
+    //     },
+    //   "type": "Microsoft.Network/networkWatchers/flowLogs",
+    //   "apiVersion": "2022-01-01",
+    //   "name": "[format('{0}/{1}', parameters('networkWatcherName'), variables('flowLogName'))]",
+    //   "location": "[resourceGroup().location]",
+    //   "properties": {
+    //     "targetResourceId": "[resourceId(variables('hub-vnet-resource-group'),'Microsoft.Network/networkSecurityGroups',concat(variables('nsgNameprefix'),toLower(parameters('storageName')[CopyIndex()].existingNSG4)))]",
+    //     "storageId": "[resourceId('Microsoft.Storage/storageAccounts', concat(toLower(parameters('storageName')[CopyIndex()].Name),parameters('storageregion')))]",
+    //     "enabled": true,
+    //     "retentionPolicy": {
+    //       "days": "7",
+    //       "enabled": true
+    //     },
+    //     "format": {
+    //       "type": "JSON",
+    //       "version": "2"
+    //     }
+    //   },
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.Storage/storageAccounts', concat(toLower(parameters('storageName')[CopyIndex()].Name),parameters('storageregion')))]"
+    //   ]
+    // }
+        
+            
+         
+  ]
+}

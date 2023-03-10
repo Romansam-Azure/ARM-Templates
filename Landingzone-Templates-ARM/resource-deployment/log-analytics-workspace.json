@@ -1,0 +1,78 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "generator": {
+      "name": "bicepdf",
+      "version": "0.4.1124.51302",
+      "templateHash": "927733442062678948"
+    }
+  },
+  
+  "parameters": {
+  
+
+      "envName": {
+            "type": "String",
+
+            "metadata": {
+                "description": "Environment Name: dev / stg /prod"
+            }
+        },
+         "regionsuffix":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure Region name in short"
+            }
+        },
+          "region":{
+            "type": "string",
+            "metadata":{
+                "description":"Pirmary Azure Region name in short"
+            }
+
+          }
+
+  },
+  "variables": {
+    "automationAccountName":"[concat('aac-rl-',parameters('envName'),'-dfj-',parameters('regionsuffix'))]",
+    "automationAccountsRG":"[concat('rg-',parameters('envName'),'-dfj-automation-',parameters('region'))]",
+    "LogAnalyticsWorkspacename":"[concat('la-rl-',parameters('envName'),'-dfj-',parameters('regionsuffix'))]"
+  },
+  "resources": [
+    
+    
+    {
+      
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2021-06-01",
+      "name": "[variables('LogAnalyticsWorkspacename')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[resourceGroup().tags]",
+      "properties": {
+        "sku": {
+                    "name": "PerGB2018"
+                  },
+        "enableLogAccessUsingOnlyResourcePermissions": true,          
+        "retentionInDays": 90
+      }
+
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/linkedServices",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(variables('LogAnalyticsWorkspacename'), '/' , 'Automation')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[resourceGroup().tags]",
+      "dependsOn": [
+        "[variables('LogAnalyticsWorkspacename')]"
+        
+      ],
+      "properties": {
+        "resourceId": "[resourceId(variables('automationAccountsRG'),'Microsoft.Automation/automationAccounts', variables('automationAccountName'))]"
+      }
+
+
+    }
+  ]
+}
